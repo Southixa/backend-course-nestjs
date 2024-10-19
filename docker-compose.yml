@@ -1,0 +1,41 @@
+version: '3'
+services:
+  full-stack-course-backend:
+    build: .  # ສ້າງ container ຈາກ Dockerfile ໃນໂຟລເດີປັດຈຸບັນ
+    container_name: full-stack-course-backend  # ຕັ້ງຊື່ container
+    ports:
+      - '4000:4000'  # ເປີດພອດ 4000 ຂອງ host ໄປຫາພອດ 4000 ຂອງ container
+    restart: always  # ຕັ້ງໃຫ້ restart ອັດຕະໂນມັດຖ້າ container ຢຸດເຮັດວຽກ
+    env_file: 
+      - .env  # ໃຊ້ຕົວແປສະພາບແວດລ້ອມຈາກໄຟລ໌ .env
+    depends_on:
+      mysql:
+        condition: service_healthy  # ລໍຖ້າໃຫ້ MySQL ພ້ອມໃຊ້ງານກ່ອນເລີ່ມ
+    networks:
+      - nest-network  # ເຊື່ອມຕໍ່ກັບເຄືອຂ່າຍ nest-network
+    volumes:
+      - .:/usr/src/app  # ເຊື່ອມໂຍງໂຟລເດີປັດຈຸບັນກັບ /usr/src/app ໃນ container
+
+  mysql:
+    image: mysql:latest  # ໃຊ້ image MySQL ເວີຊັນຫຼ້າສຸດ
+    ports:
+      - '3307:3306'  # ເປີດພອດ 3306 ຂອງ host ໄປຫາພອດ 3306 ຂອງ container
+    env_file: 
+      - .env  # ໃຊ້ຕົວແປສະພາບແວດລ້ອມຈາກໄຟລ໌ .env
+    networks:
+      - nest-network  # ເຊື່ອມຕໍ່ກັບເຄືອຂ່າຍ nest-network
+    volumes:
+      - mysql-data:/var/lib/mysql  # ເກັບຂໍ້ມູນ MySQL ໄວ້ໃນ volume
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # ໃຊ້ script ເລີ່ມຕົ້ນຖານຂໍ້ມູນ
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]  # ກວດສອບສຸຂະພາບຂອງ MySQL
+      interval: 10s  # ກວດສອບທຸກໆ 10 ວິນາທີ
+      timeout: 5s  # ໝົດເວລາຫຼັງຈາກ 5 ວິນາທີ
+      retries: 3  # ພະຍາຍາມກວດສອບ 3 ຄັ້ງ
+
+networks:
+  nest-network:
+    external: true  # ໃຊ້ເຄືອຂ່າຍທີ່ມີຢູ່ແລ້ວ
+
+volumes:
+  mysql-data:  # ກຳນົດ volume ສຳລັບເກັບຂໍ້ມູນ MySQL

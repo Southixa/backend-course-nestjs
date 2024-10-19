@@ -1,18 +1,25 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-    @Get('hello')
-    hello(): any{
-        return {
-            name: "pele",
-            age: 12
-        }
+
+    constructor(private readonly userService: UsersService) {}
+
+    @Get()
+
+    example(): boolean{
+        return this.userService.getExample();
     }
     
+    // @Post("create")
+    // create(@Body() {name, lastname}: { name: string; lastname: string }): string {
+    //     return `User created: ${name} ${lastname}`;
+    // }
+
     @Post("create")
     create(@Body() {name, lastname}: { name: string; lastname: string }): string {
-        return `User created: ${name} ${lastname}`;
+        return this.userService.create(name, lastname);
     }
 
     @Put('update/:id')
